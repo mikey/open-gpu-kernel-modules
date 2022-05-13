@@ -3992,61 +3992,11 @@ osCountTailPages
     return os_count_tail_pages(pAddress);
 }
 
-/*
- *  @brief Upon success, gets NPU register address range.
- *
- *  @param[in]  pOsGpuInfo       OS specific GPU information pointer
- *  @param[out] pBase            base (physical) of NPU register address range
- *  @param[out] pSize            size of NPU register address range
- */
-NV_STATUS
-osGetIbmnpuGenregInfo
-(
-    OS_GPU_INFO *pOsGpuInfo,
-    NvU64       *pBase,
-    NvU64       *pSize
-)
-{
-    return nv_get_ibmnpu_genreg_info(pOsGpuInfo, pBase, pSize, NULL);
-}
-
-/*
- *  @brief Upon success, gets NPU's relaxed ordering mode.
- *
- *  @param[in]  pOsGpuInfo       OS specific GPU information pointer
- *  @param[out] pMode            relaxed ordering mode
- */
-NV_STATUS
-osGetIbmnpuRelaxedOrderingMode
-(
-    OS_GPU_INFO *pOsGpuInfo,
-    NvBool      *pMode
-)
-{
-    return nv_get_ibmnpu_relaxed_ordering_mode(pOsGpuInfo, pMode);
-}
-
-/*
- *  @brief Waits for NVLink HW flush on an NPU associated with a GPU.
- *
- *  @param[in]  pOsGpuInfo       OS specific GPU information pointer
- */
-void
-osWaitForIbmnpuRsync
-(
-    OS_GPU_INFO *pOsGpuInfo
-)
-{
-    nv_wait_for_ibmnpu_rsync(pOsGpuInfo);
-}
-
 NvU32
 osGetPageSize()
 {
     return os_page_size;
 }
-
-
 
 /*
  * @brief Opens a new temporary file for reading and writing

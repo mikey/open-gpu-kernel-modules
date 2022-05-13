@@ -32,7 +32,6 @@
 #include "nv_compiler.h"
 #include "nv-reg.h"
 #include "conftest/patches.h"
-#include "nv-ibmnpu.h"
 
 #define NV_DEFINE_SINGLE_NVRM_PROCFS_FILE(name) \
     NV_DEFINE_SINGLE_PROCFS_FILE_READ_ONLY(name, nv_system_pm_lock)

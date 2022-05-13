@@ -44,7 +44,6 @@
 
 #include "nv-frontend.h"
 #include "nv-hypervisor.h"
-#include "nv-ibmnpu.h"
 #include "nv-rsync.h"
 #include "nv-kthread-q.h"
 #include "nv-pat.h"
@@ -424,11 +423,6 @@ nvlink_drivers_exit(void)
     nvswitch_exit();
 #endif
 
-
-#if defined(NVCPU_PPC64LE)
-    ibmnpu_exit();
-#endif
-
     nvlink_core_exit();
 }
 
@@ -446,25 +440,11 @@ nvlink_drivers_init(void)
         return rc;
     }
 
-#if defined(NVCPU_PPC64LE)
-    rc = ibmnpu_init();
-    if (rc < 0)
-    {
-        nv_printf(NV_DBG_INFO, "NVRM: IBM NPU init failed.\n");
-        nvlink_core_exit();
-        return rc;
-    }
-#endif
-
-
 #if NVCPU_IS_64_BITS
     rc = nvswitch_init();
     if (rc < 0)
     {
         nv_printf(NV_DBG_INFO, "NVRM: NVSwitch init failed.\n");
-#if defined(NVCPU_PPC64LE)
-        ibmnpu_exit();
-#endif
         nvlink_core_exit();
     }
 #endif
@@ -1220,15 +1200,6 @@ static int nv_start_device(nv_state_t *nv, nvidia_stack_t *sp)
         power_ref = NV_TRUE;
     }
 
-    rc = nv_init_ibmnpu_devices(nv);
-    if (rc != 0)
-    {
-        nv_printf(NV_DBG_ERRORS,
-            "NVRM: failed to initialize ibmnpu devices attached to GPU with minor number %d\n",
-            nvl->minor_num);
-        goto failed;
-    }
-
     if (!(nv->flags & NV_FLAG_PERSISTENT_SW_STATE))
     {
         rc = nv_dev_alloc_stacks(nvl);
@@ -1416,8 +1387,6 @@ failed:
     }
 
     nv_dev_free_stacks(nvl);
-
-    nv_unregister_ibmnpu_devices(nv);
 
     if (power_ref)
     {
@@ -1755,8 +1724,6 @@ static void nv_stop_device(nv_state_t *nv, nvidia_stack_t *sp)
 
     /* leave INIT flag alone so we don't reinit every time */
     nv->flags &= ~NV_FLAG_OPEN;
-
-    nv_unregister_ibmnpu_devices(nv);
 
     if (!(nv->flags & NV_FLAG_PERSISTENT_SW_STATE))
     {
@@ -4917,70 +4884,6 @@ NV_STATUS NV_API_CALL nv_get_device_memory_config(
         return NV_ERR_NOT_SUPPORTED;
     }
 
-#if defined(NVCPU_PPC64LE)
-    nv_npu_numa_info_t *numa_info;
-
-    numa_info = &nvl->npu->numa_info;
-
-    if (node_id != NULL)
-    {
-        *node_id = nvl->numa_info.node_id;
-    }
-
-    if (compr_addr_sys_phys != NULL)
-    {
-        *compr_addr_sys_phys =
-            numa_info->compr_sys_phys_addr;
-    }
-
-    if (addr_guest_phys != NULL)
-    {
-        *addr_guest_phys =
-            numa_info->guest_phys_addr;
-    }
-
-    if (addr_width != NULL)
-    {
-        *addr_width = nv_volta_dma_addr_size - nv_volta_addr_space_width;
-    }
-
-    if (granularity != NULL)
-    {
-        *granularity = nv_volta_addr_space_width;
-    }
-
-    status = NV_OK;
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     return status;
 }
 
@@ -4991,55 +4894,6 @@ NV_STATUS NV_API_CALL nv_get_nvlink_line_rate(
     NvU32      *linerate
 )
 {
-#if defined(NV_PNV_PCI_GET_NPU_DEV_PRESENT) && defined(NV_OF_GET_PROPERTY_PRESENT)
-
-    nv_linux_state_t *nvl;
-    struct pci_dev   *npuDev;
-    NvU32            *pSpeedPtr = NULL;
-    NvU32            speed;
-    int              len;
-
-    if (nvState != NULL)
-        nvl = NV_GET_NVL_FROM_NV_STATE(nvState);
-    else
-        return NV_ERR_INVALID_ARGUMENT;
-
-    if (!nvl->npu)
-    {
-        return NV_ERR_NOT_SUPPORTED;
-    }
-
-    npuDev = nvl->npu->devs[0];
-    if (!npuDev->dev.of_node)
-    {
-        nv_printf(NV_DBG_ERRORS, "NVRM: %s: OF Node not found in IBM-NPU device node\n",
-                  __FUNCTION__);
-        return NV_ERR_NOT_SUPPORTED;
-    }
-
-    pSpeedPtr = (NvU32 *) of_get_property(npuDev->dev.of_node, "ibm,nvlink-speed", &len);
-
-    if (pSpeedPtr)
-    {
-        speed = (NvU32) be32_to_cpup(pSpeedPtr);
-    }
-    else
-    {
-        return NV_ERR_NOT_SUPPORTED;
-    }
-
-    if (!speed)
-    {
-        return NV_ERR_NOT_SUPPORTED;
-    }
-    else
-    {
-        *linerate = speed;
-    }
-
-    return NV_OK;
-
-#endif
 
     return NV_ERR_NOT_SUPPORTED;
 }
@@ -5543,9 +5397,7 @@ NvU32 NV_API_CALL nv_get_os_type(void)
 
 void NV_API_CALL nv_flush_coherent_cpu_cache_range(nv_state_t *nv, NvU64 cpu_virtual, NvU64 size)
 {
-#if NVCPU_IS_PPC64LE
-    return nv_ibmnpu_cache_flush_range(nv, cpu_virtual, size);
-#elif NVCPU_IS_AARCH64
+#if NVCPU_IS_AARCH64
 
     NvU64 va, cbsize;
     NvU64 end_cpu_virtual = cpu_virtual + size;

@@ -25,7 +25,6 @@
 
 #include "os-interface.h"
 #include "nv-linux.h"
-#include "nv-ibmnpu.h"
 #include "nv-rsync.h"
 
 #include "nv-p2p.h"
@@ -834,91 +833,7 @@ int nvidia_p2p_get_rsync_registers(
     nvidia_p2p_rsync_reg_info_t **reg_info
 )
 {
-    nv_linux_state_t *nvl;
-    nv_state_t *nv;
-    NV_STATUS status;
-    void *ptr = NULL;
-    NvU64 addr;
-    NvU64 size;
-    struct pci_dev *ibmnpu = NULL;
-    NvU32 index = 0;
-    NvU32 count = 0;
-    nvidia_p2p_rsync_reg_info_t *info = NULL;
-    nvidia_p2p_rsync_reg_t *regs = NULL;
-
-    if (reg_info == NULL)
-    {
-        return -EINVAL;
-    }
-
-    status = os_alloc_mem((void**)&info, sizeof(*info));
-    if (status != NV_OK)
-    {
-        return -ENOMEM;
-    }
-
-    memset(info, 0, sizeof(*info));
-
-    info->version = NVIDIA_P2P_RSYNC_REG_INFO_VERSION;
-
-    LOCK_NV_LINUX_DEVICES();
-
-    for (nvl = nv_linux_devices; nvl; nvl = nvl->next)
-    {
-        count++;
-    }
-
-    status = os_alloc_mem((void**)&regs, (count * sizeof(*regs)));
-    if (status != NV_OK)
-    {
-        nvidia_p2p_put_rsync_registers(info);
-        UNLOCK_NV_LINUX_DEVICES();
-        return -ENOMEM;
-    }
-
-    for (nvl = nv_linux_devices; nvl; nvl = nvl->next)
-    {
-        nv = NV_STATE_PTR(nvl);
-
-        addr = 0;
-        size = 0;
-
-        status = nv_get_ibmnpu_genreg_info(nv, &addr, &size, (void**)&ibmnpu);
-        if (status != NV_OK)
-        {
-            continue;
-        }
-
-        ptr = nv_ioremap_nocache(addr, size);
-        if (ptr == NULL)
-        {
-            continue;
-        }
-
-        regs[index].ptr = ptr;
-        regs[index].size = size;
-        regs[index].gpu = nvl->pci_dev;
-        regs[index].ibmnpu = ibmnpu;
-        regs[index].cluster_id = 0;
-        regs[index].socket_id = nv_get_ibmnpu_chip_id(nv);
-
-        index++;
-    }
-
-    UNLOCK_NV_LINUX_DEVICES();
-
-    info->regs = regs;
-    info->entries = index;
-
-    if (info->entries == 0)
-    {
-        nvidia_p2p_put_rsync_registers(info);
-        return -ENODEV;
-    }
-
-    *reg_info = info;
-
-    return 0;
+    return -ENODEV;
 }
 
 EXPORT_SYMBOL(nvidia_p2p_get_rsync_registers);

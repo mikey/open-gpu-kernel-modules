@@ -134,22 +134,6 @@ getGpuInfos(Subdevice *pSubdevice, NV2080_CTRL_GPU_GET_INFO_V2_PARAMS *pParams, 
                 data = !!pCl->getProperty(pCl, PDB_PROP_CL_IS_EXTERNAL_GPU);
                 break;
             }
-            case NV2080_CTRL_GPU_INFO_INDEX_IBMNPU_RELAXED_ORDERING:
-            {
-                NvBool mode = NV_FALSE;
-                data = NV2080_CTRL_GPU_INFO_IBMNPU_RELAXED_ORDERING_UNSUPPORTED;
-
-                if (osGetIbmnpuRelaxedOrderingMode(pGpu->pOsGpuInfo, &mode) == NV_OK)
-                {
-                    data = NV2080_CTRL_GPU_INFO_IBMNPU_RELAXED_ORDERING_DISABLED;
-
-                    if (mode)
-                    {
-                        data = NV2080_CTRL_GPU_INFO_IBMNPU_RELAXED_ORDERING_ENABLED;
-                    }
-                }
-                break;
-            }
             case NV2080_CTRL_GPU_INFO_INDEX_GLOBAL_POISON_FUSE_ENABLED:
             {
                 if (gpuIsGlobalPoisonFuseEnabled(pGpu))

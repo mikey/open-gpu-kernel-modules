@@ -642,12 +642,6 @@ NV_STATUS CliDelThirdPartyP2PVidmemInfo
         bPendingMappings = NV_TRUE;
     }
 
-    // RSYNC is needed only if there are outstanding mappings.
-    if (bPendingMappings)
-    {
-        osWaitForIbmnpuRsync(pVidmemInfo->pMemDesc->pGpu->pOsGpuInfo);
-    }
-
     mapRemove(&pThirdPartyP2P->vidmemInfoMap, pVidmemInfo);
 
     status = btreeUnlink(&pVidmemInfo->addressRangeNode,
@@ -961,11 +955,6 @@ static NV_STATUS _thirdpartyp2pDelMappingInfoByKey
             if (status == NV_OK)
             {
                 portMemFree(pMappingInfo);
-            }
-
-            if (bIsRsyncNeeded)
-            {
-                osWaitForIbmnpuRsync(pVidmemInfo->pMemDesc->pGpu->pOsGpuInfo);
             }
 
             //

@@ -793,11 +793,6 @@ void               NV_API_CALL nv_put_file_private(void *);
 
 NV_STATUS NV_API_CALL nv_get_device_memory_config(nv_state_t *, NvU64 *, NvU64 *, NvU32 *, NvU32 *, NvS32 *);
 
-NV_STATUS NV_API_CALL nv_get_ibmnpu_genreg_info(nv_state_t *, NvU64 *, NvU64 *, void**);
-NV_STATUS NV_API_CALL nv_get_ibmnpu_relaxed_ordering_mode(nv_state_t *nv, NvBool *mode);
-
-void      NV_API_CALL nv_wait_for_ibmnpu_rsync(nv_state_t *nv);
-
 void      NV_API_CALL nv_ibmnpu_cache_flush_range(nv_state_t *nv, NvU64, NvU64);
 
 void      NV_API_CALL nv_p2p_free_platform_data(void *data);

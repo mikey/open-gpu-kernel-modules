@@ -962,15 +962,6 @@ NV_STATUS osGetAcpiTable(NvU32 tableSignature,
 
 NV_STATUS osInitGetAcpiTable(void);
 
-NV_STATUS osGetIbmnpuGenregInfo(OS_GPU_INFO *pArg1,
-                                NvU64 *pArg2,
-                                NvU64 *pArg3);
-
-NV_STATUS osGetIbmnpuRelaxedOrderingMode(OS_GPU_INFO *pArg1,
-                                         NvBool *pArg2);
-
-void osWaitForIbmnpuRsync(OS_GPU_INFO *pArg1);
-
 NV_STATUS osGetAcpiRsdpFromUefi(NvU32 *pRsdpAddr);
 
 NV_STATUS osCreateNanoTimer(OS_GPU_INFO  *pArg1,
